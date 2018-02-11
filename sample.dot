@@ -1,0 +1,22 @@
+/*
+	Communications In The Bz Repo
+*/
+
+digraph bz_communications
+{
+	ranksep=0.8
+ 	nodesep=0.8
+ 	overlap="false"
+
+	node [color="black", shape="rectangle"]
+
+	sample [label="I am a sample for brian's memory"]
+	sample -> sample [label="hi bb"]
+
+	subgraph cluster_0 {
+      node [style=filled];
+     "Item 1" "Item 2";
+     label = "Container A";
+     color=blue;
+  }
+}

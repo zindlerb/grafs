@@ -1,0 +1,34 @@
+/*
+	Communications In The Bz Repo
+*/
+
+digraph bz_communications
+{
+	ranksep=0.8
+ 	nodesep=0.8
+ 	overlap="false"
+
+	node [color="black", shape="rectangle"]
+
+	subgraph cluster_scheduled_comms {
+		label = "Scheduled Communications";
+		"CommunicationSender"
+		"CommunicationDataPackager"
+		"CommunicationEventEmitter"
+		"CommunicationEventHandler"
+		"CommunicationSender"
+	}
+
+	subgraph cluster_sms {
+		label = "SMS";
+		color=black;
+		"Item 1";
+	}
+
+	subgraph cluster_email {
+		label = "Email";
+		"item 2"
+
+
+	}
+}
