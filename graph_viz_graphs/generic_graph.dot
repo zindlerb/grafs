@@ -1,0 +1,17 @@
+/*
+	Communications In The Bz Repo
+*/
+
+graph generic_graph
+{
+
+	"a" -- "e"
+	"a" -- "f"
+	"b" -- "c"
+	"c" -- "d"
+	"e" -- "g"
+	"f" -- "g"
+	"g" -- "h"
+	"d" -- "h"
+	"a" -- "b"
+}
