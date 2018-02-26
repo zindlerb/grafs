@@ -1,0 +1,29 @@
+digraph prosper
+{
+	ranksep=0.8
+ 	nodesep=0.8
+ 	overlap="false"
+
+	node [color="black", shape="rectangle"]
+
+	"uninvolved" -> "warm prospect" [label="1"]
+	{rank = same; "uninvolved"; "warm prospect";}
+	"warm prospect" -> "interested" [label="7"]
+	{rank = same; "warm prospect"; "interested";}
+	"interested" -> "very interested" [label="8"]
+	{rank = same; "interested"; "very interested";}
+
+	"interested" -> "warm prospect" [label="5"]
+	"interested" -> "uninvolved" [label="5"]
+	"warm prospect" -> "very interested"
+
+	"very interested" -> "accept tos" [rhead=cluster_0];
+	"uninvolved" -> "very interested"
+
+	subgraph cluster_0 {
+		label="Onboarding"
+		rankdir="TB"
+		"accept tos" -> "verify email"
+		"verify email" -> "onboarded"
+  }
+}

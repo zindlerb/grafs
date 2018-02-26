@@ -1,14 +1,4 @@
-
-
-/*
-	Open q's:
-		- bundle data in class or funcional ops seperate from class that operate on it
-
-*/
-
-
-
-// create a gra
+const _ = require('lodash')
 
 // Good ref: https://github.com/dagrejs/graphlib/wiki/API-Reference#alg-postorder
 class Graph {
@@ -22,6 +12,9 @@ class Graph {
 		this.baseId += 1;
 		return this.baseId;
 	}
+
+	getNode(id) { return this._nodes[id] }
+	getEdge(id) { return this._edges[id] }
 
 	addEdge(nodeAId, nodeBId, directed, attrs) {
 		const nodeA = this._nodes[nodeAId];
@@ -52,8 +45,8 @@ class Graph {
 	removeEdge(edgeId) {
 		const edge = this._edges[edgeId];
 		const [vertexA, vertexB] = edge.vertices;
-		this._nodes[vertexAId].edges.filter((edge) => edge.id != edgeId)
-		this._nodes[vertexBId].edges.filter((edge) => edge.id != edgeId)
+		this._nodes[vertexA.id].edges.filter((edge) => edge.id != edgeId)
+		this._nodes[vertexB.id].edges.filter((edge) => edge.id != edgeId)
 		delete this._edges[edgeId];
 	}
 
@@ -93,26 +86,36 @@ class GraphPersistance {
 		}
 
 		_.forEach(graph._nodes, (node) => {
-			const newNode = Object.assign({}, node, {
-				edges: [node.edges.map((edge) => edge.id)]
-			})
-
+			const newNode = Object.assign({}, node)
+			delete newNode.edges;
 			serializedGraph.nodes.push(newNode);
 		})
 
 		_.forEach(graph._edges, (edge) => {
+			const newEdge = Object.assign({}, edge, {
+				source: edge.vertices[0].id,
+				target: edge.vertices[1].id
+			})
+
+			delete newEdge.vertices;
+			serializedGraph.links.push(newEdge);
 		})
 
-		JSON.stringify(serializedGraph);
+		return JSON.stringify(serializedGraph);
 	}
 
-	static fromGraphSpecToGraph() {
+	static fromGraphSpecToGraph(serializedGraph) {
+		const graph = new Graph()
 
+		serializedGraph.nodes.forEach((node) => {
+			graph._nodes[node.id] = node;
+		})
+
+		return graph
 	}
 
 	static deserialize() {
-		// transform back
-		// in default constructor have this inside the loader
+
 	}
 
 	static saveToFile() {

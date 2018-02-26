@@ -14,7 +14,7 @@ digraph bz_communications
 	sample -> sample [label="hi bb"]
 
 	subgraph cluster_0 {
-      node [style=filled];
+      node [style=filled rank=same];
      "Item 1" "Item 2";
      label = "Container A";
      color=blue;
