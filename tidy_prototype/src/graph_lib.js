@@ -1,10 +1,45 @@
 const _ = require('lodash')
 
 // Good ref: https://github.com/dagrejs/graphlib/wiki/API-Reference#alg-postorder
+let idCount = 0
+
+class idMaker {
+	constructor(prefix) {
+		this.count = 0;
+		this.prefix = prefix
+	}
+
+	genId() {
+		this.count++;
+		return `${this.prefix}_${this.count}`
+	}
+}
+
+const linkIdMaker = new idMaker('link')
+
+class Link {
+	constructor(vertices, attrs, directed, id) {
+		this.id = id || linkIdMaker.genId();
+		this.vertices = vertices //[a, b]
+		this.attrs = attrs || {}
+		this.directed = directed === undefined ? true : directed;
+	}
+}
+
+const nodeIdMaker = new idMaker('node')
+
+class Node {
+	constructor(attrs, edges, id) {
+		this.id = id || nodeIdMaker.genId()
+		this.attrs = attrs || {}
+		this.edges = edges || []
+	}
+}
+
 class Graph {
 	constructor() {
-		this._nodes = {} // { id: , attrs: {}, edges: [] }
-		this._edges = {} // { id: , attrs: {}, vertices: [a, b] , directed:  }
+		this._nodes = {}
+		this._edges = {}
 		this.baseId = 0;
 	}
 
@@ -20,7 +55,8 @@ class Graph {
 		const nodeA = this._nodes[nodeAId];
 		const nodeB = this._nodes[nodeBId];
 
-		const edge = { id: this.genId(), vertices: [nodeA, nodeB], directed, attrs: attrs || {} }
+		const edge = new Link([nodeA, nodeB], attrs, directed)
+
 		nodeA.edges.push(edge)
 		nodeB.edges.push(edge)
 		this._edges[edge.id] = edge
@@ -28,8 +64,8 @@ class Graph {
 	}
 
 	addNode(attrs) {
-		const node = { id: this.genId(), attrs: attrs || {}, edges: [] }
-		this._nodes[node.id] = node;
+		const node = new Node(attrs);
+		this._nodes[node.id] = node
 		return node;
 	}
 
@@ -104,18 +140,36 @@ class GraphPersistance {
 		return JSON.stringify(serializedGraph);
 	}
 
-	static fromGraphSpecToGraph(serializedGraph) {
+	static fromGraphSpecToGraph(graphSpec) {
+		console.log('graphSpec', graphSpec, typeof graphSpec)
 		const graph = new Graph()
 
-		serializedGraph.nodes.forEach((node) => {
-			graph._nodes[node.id] = node;
+		graphSpec.nodes.forEach((node) => {
+			graph._nodes[node.id] = new Node(node.attrs, node.edges, node.id)
+		})
+
+		graphSpec.links.forEach((link) => {
+			const mutableLink = new Link(
+				[
+					graph._nodes[link.source],
+					graph._nodes[link.target]
+				],
+				link.attrs,
+				link.directed,
+				link.id
+			);
+
+			graph._edges[link.id] = mutableLink
+
+			graph._nodes[link.source].edges.push(mutableLink)
+			graph._nodes[link.target].edges.push(mutableLink)
 		})
 
 		return graph
 	}
 
-	static deserialize() {
-
+	static deserialize(serializedGraph) {
+		return this.fromGraphSpecToGraph(JSON.parse(serializedGraph))
 	}
 
 	static saveToFile() {

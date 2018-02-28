@@ -4,8 +4,8 @@
 
 	td:
 		[x] make the nodes line up in the center verticaly
-		- add adjustable rank and order spacing
-		- save to toolbar + persist across sessions, add clear to toolbar
+		[x] add adjustable rank and order spacing
+		[x] save to toolbar + persist across sessions, add clear to toolbar
 		- add text with auto box sizing
 		- add dragging
 		- add delete
@@ -24,13 +24,14 @@ import $ from 'jquery'
 import dragManager from './drag_manager.js'
 import React, { Component } from 'react';
 import './App.css';
-import { Graph } from './graph_lib.js'
+import { Graph, GraphPersistance } from './graph_lib.js'
 
 // Modes
 const DRAG = 'DRAG'
 const CONNECT = 'CONNECT'
 
 const Scrubber = ({ onChange, value, sensitivity }) => {
+	// increment size?
 	sensitivity = sensitivity || 5;
 
 	return (
@@ -55,16 +56,24 @@ const Scrubber = ({ onChange, value, sensitivity }) => {
 class StateManager {
 	constructor() {
 		this.stateChangeCallbacks = []
-		this.state = {
-			graph: new Graph(),
-			ranks: _.fill(Array(6), undefined),
-			rankSpacing: 40,
-			orderSpacing: 40,
-			mode: CONNECT,
-			modes: [
-				DRAG,
-				CONNECT
-			]
+
+		const state = localStorage.getItem("STATE");
+		if (state) {
+			const parsedState = JSON.parse(state)
+			parsedState.graph = GraphPersistance.deserialize(parsedState.graph)
+			this.state = parsedState;
+		} else {
+			this.state = {
+				graph: new Graph(),
+				ranks: _.fill(Array(6), undefined),
+				rankSpacing: 40,
+				orderSpacing: 40,
+				mode: CONNECT,
+				modes: [
+					DRAG,
+					CONNECT
+				]
+			}
 		}
 	}
 
@@ -95,51 +104,84 @@ function getRectMidpoint({ x, y, width, height }) {
 
 const stateManager = new StateManager()
 
-const Node = ({ node }) => {
-	const { text } = node.attrs
-	return (
- 			<div
-			className={classnames("node u-clickable u-unselectable", node.id)}
-			data-node-id={node.id}
-			onClick={(e) => e.stopPropagation()}
-			onMouseDown={(e) => {
-				// connect
-				if (stateManager.state.mode === CONNECT) {
-					dragManager.start(e, {
-						nodeId: node.id,
-						onEnd(e) {
-							const dragManagerCtx = this;
-							$('.node').each(function () {
-								const rect = this.getBoundingClientRect();
+class Node extends Component {
+	constructor() {
+		super()
+		this.state = {
+			isEditing: false,
+			tempText: ''
+		}
+	}
 
-								if (isPointWithinRect({ x: e.clientX, y: e.clientY }, rect)) {
-									stateManager.state.graph.addEdge(
-										dragManagerCtx.nodeId,
-										$(this).data().nodeId,
-										true
-									)
-									stateManager.changeState()
-								}
-							})
-						}
-					})
-				} else if (stateManager.state.mode === DRAG) {
-					dragManager.start(e, {
-						onEnd() {
-							// figure out which rank
-							// grab all nodes in rank see which one it is in between
+	handleMouseDown(e) {
+		if (stateManager.state.mode === CONNECT) {
+			dragManager.start(e, {
+				nodeId: node.id,
+				onEnd(e) {
+					const dragManagerCtx = this;
+					$('.node').each(function () {
+						const rect = this.getBoundingClientRect();
+						if (isPointWithinRect({ x: e.clientX, y: e.clientY }, rect)) {
+							stateManager.state.graph.addEdge(
+								dragManagerCtx.nodeId,
+								$(this).data().nodeId,
+								true
+							)
+							stateManager.changeState()
 						}
 					})
 				}
-			}}>
-			{ text }
-		</div>
+			})
+		} else if (stateManager.state.mode === DRAG) {
+			dragManager.start(e, {
+				onEnd() {
+					// figure out which rank
+					// grab all nodes in rank see which one it is in between
+				}
+			})
+		}
+	}
+
+	render() {
+		const { text } = node.attrs
+		let content
+		if (this.state.isEditing) {
+			content = (
+				<textarea
+					value={this.state.tempText}
+					onBlur={() => {
+						this.setState({ isEditing: false, tempText: '' })
+						// set the node attrs here ZINDLERB
+					}}
+					onChange={(e) => this.setState({ tempText: e.value }))}>
+				</textarea>
+			)
+		} else {
+			content = text
+		}
+
+		return (
+	 		<div
+				style={{ marginLeft: orderSpacing/2, marginRight: orderSpacing/2 }}
+				className={classnames("node u-clickable u-unselectable", node.id)}
+				data-node-id={node.id}
+				onClick={(e) => e.stopPropagation()}
+				onDoubleClick={() => this.setState({ isEditing: true })}
+				onMouseDown={this.handeMouseDown.bind(this)}>
+				{ content }
+			</div>
+		)
+	}
+}
+
+const Node = ({ node, orderSpacing }) => {
+
 	)
 }
 
-const RankContainer = ({ nodes, rank }) => {
+const RankContainer = ({ nodes, rank, rankSpacing, orderSpacing }) => {
 	return (
-		<div className="rank-container tc"
+		<div className="rank-container tc" style={{ paddingTop: rankSpacing/2, paddingBottom: rankSpacing/2 }}
 			onClick={() => {
 				const node = stateManager.state.graph.addNode({ text: 'I am a node', rank })
 
@@ -150,7 +192,7 @@ const RankContainer = ({ nodes, rank }) => {
 				stateManager.state.ranks[rank].push(node)
 				stateManager.changeState()
 			}}>
-			{ nodes ? nodes.map((node) => <Node node={node} />) : [] }
+			{ nodes ? nodes.map((node) => <Node node={node} orderSpacing={orderSpacing} />) : [] }
 		</div>
 	)
 }
@@ -237,8 +279,39 @@ class App extends Component {
 							stateManager.state.orderSpacing = newValue;
 							stateManager.changeState()
 						}}/>
+					<a
+						href="#"
+						className="dib mh2"
+						onClick={() => {
+							const state = Object.assign({}, this.state)
+							state.graph = GraphPersistance.serialize(state.graph)
+							stateManager.changeState()
+
+							localStorage.setItem("STATE", JSON.stringify(state));
+						}}>
+						Save
+					</a>
+					<a
+						href="#"
+						className="dib mh2"
+						onClick={() => {
+							localStorage.removeItem("STATE");
+							stateManager.changeState()
+						}}>
+							Clear
+					</a>
 				</div>
-				{ this.state.ranks.map((nodes, rankNum) => <RankContainer nodes={nodes} rank={rankNum} /> ) }
+				{
+					this.state.ranks.map((nodes, rankNum) => {
+						return (
+							<RankContainer
+								nodes={nodes}
+								rank={rankNum}
+								rankSpacing={this.state.rankSpacing}
+								orderSpacing={this.state.orderSpacing} />
+						)
+					})
+				}
 				<ArrowRenderer
 					edges={_.toArray(stateManager.state.graph._edges)} />
       </div>

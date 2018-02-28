@@ -6,7 +6,7 @@ var {
 const _ = require('lodash')
 
 const smallGraph = new Graph();
-const node1 = smallGraph.addNode()
+const node1 = smallGraph.addNode({ color: 'tomato' })
 const node2 = smallGraph.addNode()
 const node3 = smallGraph.addNode()
 
@@ -27,7 +27,13 @@ describe('Graph', () => {
 
 	it('deserializes', () => {
 		const deserialized = GraphPersistance.deserialize(GraphPersistance.serialize(smallGraph))
-		expect(deserialized.getNode(node1.id)).toEqual(node1.id)
-		expect(deserialized.getEdge(edge1.id)).toEqual(edge1.id)
+		expect(deserialized.getNode(node1.id).id).toEqual(node1.id)
+		expect(deserialized.getNode(node1.id).attrs).toEqual(node1.attrs)
+
+		expect(deserialized.getEdge(edge1.id).id).toEqual(edge1.id)
+		expect(deserialized.getEdge(edge1.id).attrs).toEqual(edge1.attrs)
+
+		console.log(smallGraph)
+		console.log(deserialized)
 	})
 });
