@@ -1,0 +1,36 @@
+digraph school
+{
+	rankdir="LR"
+	node [color="black", shape="rectangle"]
+
+	livingston [label="Livingston, Lenawee, Monroe, Oakland, southersn Macomb, Flint (within 1 hr)"]
+	low_school [label="Low-income school discipline"]
+	srp [label="SRP - Student Rights Project at (U-M)"]
+	email [label="Email: sfsdp@stfdsdfjludesdntadvocates.com"]
+	low_special [label="Low-income special education"]
+	mpas [label="MPAS (), MAF (1-800-1880"]
+	liv_monrow [label="Livingston Monroe Oakland"]
+	high [label="Higher Income"]
+	lauren [label="Lauren - Sac Fee Based"]
+	amy [label="Amy (Invoicing)"]
+	darma [label="Darma Fee Based"]
+	lena [label="Lenawee"]
+
+	livingston -> low_school
+	low_school -> srp
+	srp -> email
+
+	livingston -> low_special
+	low_special -> mpas
+
+	livingston -> liv_monrow
+	livingston -> lena
+
+	liv_monrow -> high
+	lena -> high
+
+	high -> lauren
+
+	lauren -> amy
+	amy -> darma
+}
