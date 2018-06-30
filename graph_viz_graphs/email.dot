@@ -1,0 +1,17 @@
+/*
+	Communications In The Bz Repo
+*/
+
+digraph email
+{
+	node [color="black", shape="rectangle"]
+
+	"Email Base" -> "Email"
+	"Email" -> "Campaign"
+
+	"Sms Base" -> "Sms"
+	"Sms" -> "Campaign"
+
+	"Email" -> "Communication Tracking" [label="On Send"]
+	"Sms" -> "Communication Tracking" [label="On Send"]
+}

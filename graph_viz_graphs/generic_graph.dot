@@ -4,14 +4,7 @@
 
 graph generic_graph
 {
-
-	"a" -- "e"
 	"a" -- "f"
-	"b" -- "c"
-	"c" -- "d"
-	"e" -- "g"
+	"a" -- "g"
 	"f" -- "g"
-	"g" -- "h"
-	"d" -- "h"
-	"a" -- "b"
 }

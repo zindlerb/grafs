@@ -1,0 +1,36 @@
+/*
+	Communications In The Bz Repo
+*/
+
+digraph bz_communications
+{
+	rankdir="LR"
+	ratio="compress"
+	node [color="black", shape="rectangle"]
+
+	"Google/SEM" -> "Property Page. Click unlock property"
+	"Google/SEM" -> "Data Landing Page Signup"
+
+	"Property Page. Click unlock property" -> "Slack/Email Notification"
+	"Data Landing Page Signup" -> "Slack/Email Notification"
+
+	"Slack/Email Notification" -> "Admin sets up account and plan"
+	"Admin sets up account and plan" -> "Welcome email is sent with login details" [label="if new user"]
+	"Welcome email is sent with login details" -> "User is directed to the property reports tab"
+	"Admin sets up account and plan" -> "User is directed to the property reports tab"
+
+	"User is directed to the property reports tab" -> "Click permit button"
+	"User is directed to the property reports tab" -> "Clicks upgrade button"
+	"Clicks upgrade button" -> "Slack Alert"
+	"Slack Alert" -> "Admin changes plan or cancels via admin view"
+
+	"Click permit button" -> "Search via permit map"
+	"Search via permit map" -> "User clicks unlock permit report"
+
+	"User clicks unlock permit report" -> "Confirmation modal" [label=">1 permits"]
+	"User clicks unlock permit report" -> "Confirmation modal (with upgrade copy)" [label="1 permit"]
+	"User clicks unlock permit report" -> "Upgrade modal with alert" [label="0 permits"]
+
+	"Confirmation modal" -> "Property allocation decreases by one. Property added to property list"
+	"Confirmation modal (with upgrade copy)" -> "Property allocation decreases by one. Property added to property list"
+}
