@@ -1,0 +1,10 @@
+text box component
+	line breaks in svg
+	border box
+render ranks for bounding box
+click inside for box
+new boxes
+connecting boxes
+double click on box to edit
+drag box into zones
+avoiding line connections
