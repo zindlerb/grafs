@@ -1,23 +1,3 @@
-// for connecting - svg overlaid on whole thing, arrows from center of boxes, keep arrow in the center
-
-/*
-
-	td:
-		[x] make the nodes line up in the center verticaly
-		- add adjustable rank and order spacing
-		- save to toolbar + persist across sessions, add clear to toolbar
-		- add text with auto box sizing
-		- add dragging
-		- add delete
-		- prototype with one of the diagrams - the original coms diagram
-		- work on arrow avoidance .. how should the nodes move?
-		- test direction
-		- test on more diagrams
-
-
-		- exclude self from the drag
-*/
-
 import classnames from 'classnames'
 import _ from 'lodash'
 import $ from 'jquery'
@@ -56,7 +36,7 @@ class StateManager {
 	constructor() {
 		this.stateChangeCallbacks = []
 		this.state = {
-			graph: new Graph(),
+			graphContainers: [],
 			ranks: _.fill(Array(6), undefined),
 			rankSpacing: 40,
 			orderSpacing: 40,
@@ -74,6 +54,20 @@ class StateManager {
 
 	changeState() {
 		this.stateChangeCallbacks.forEach((stateCb) => stateCb(this.state))
+	}
+}
+
+class Pos {
+	constructor(x, y) {
+		this.x = x;
+		this.y = y;
+	}
+}
+
+class GraphContainerModel {
+	constructor(pos) {
+		this.graph = new Graph()
+		this.pos = pos
 	}
 }
 
@@ -199,6 +193,7 @@ class App extends Component {
 	constructor() {
 		super()
 		this.state = stateManager.state
+		console.log('this.state', this.state)
 	}
 
 	componentDidMount() {
@@ -238,12 +233,119 @@ class App extends Component {
 							stateManager.changeState()
 						}}/>
 				</div>
-				{ this.state.ranks.map((nodes, rankNum) => <RankContainer nodes={nodes} rank={rankNum} /> ) }
-				<ArrowRenderer
-					edges={_.toArray(stateManager.state.graph._edges)} />
+				<Renderer graphContainers={this.state.graphContainers} />
       </div>
     );
   }
 }
+
+const getOffsetPos = (ev) => {
+	console.log(ev.clientX, ev.target.x)
+	const rect = ev.target.getBoundingClientRect();
+	return new Pos(
+		ev.clientX - rect.x,
+		ev.clientY - rect.y
+	)
+}
+
+class Renderer extends Component {
+	addGraphContainer = (e) => {
+		stateManager.state.graphContainers.push(
+			new GraphContainerModel(getOffsetPos(e))
+		)
+		stateManager.changeState()
+	}
+
+	render() {
+		return (
+			<svg className="renderer" onClick={this.addGraphContainer}>
+				{this.props.graphContainers.map((container) => <GraphContainer container={container} />)}
+			</svg>
+		)
+	}
+}
+
+class GraphContainer extends Component {
+	addNode() {
+		this.props.container.graph.addNode({ text: 'noddjkfdlfade\nbdsjffldsdfjsjdfklsoi\nfdjkfdakadjfl' })
+		stateManager.changeState()
+	}
+
+	render() {
+		const {pos} = this.props.container;
+		const nodes = this.props.container.graph.allNodes()
+		return (
+			<g>
+				<rect
+					onClick={(e) =>  {
+						this.addNode()
+						e.stopPropagation()
+					}}
+					className="graph-container"
+					x={pos.x} y={pos.y} width={300} height={300} />
+				{nodes.map(({ attrs }) => (<GraphNode text={attrs.text} x={pos.x} y={pos.y} />))}
+			</g>
+		)
+	}
+}
+
+const GraphNode = ({x, y, text}) => {
+	return (
+		<g>
+			<TextBox x={x} y={y} text={text} padding={8}/>
+		</g>
+	)
+	// make that a p?
+}
+
+class TextBox extends Component {
+	constructor() {
+		super()
+		this.state = {}
+	}
+
+	render() {
+		let {x, y, text, borderColor, padding} = this.props
+		const lineHeight = "1.2em";
+		padding = padding || 0;
+		borderColor = borderColor || 'black';
+
+		let r;
+		if (this.state.textElement) {
+			var bb = this.state.textElement.getBBox();
+			r = (
+				<rect
+					stroke={borderColor}
+					fill="transparent"
+					x={x}
+					y={y}
+					width={bb.width + (padding * 2)}
+					height={bb.height + (padding * 2)} />
+			)
+		}
+
+		return (
+			<g>
+				{r}
+				<g ref={(el) => {
+						if (!this.state.textElement) {
+							this.setState({textElement: el})
+						}
+					}} transform={`translate(${x + padding}, ${y + padding})`}>
+				  <text x="0" y="0">
+						{
+							text.split('\n').map(
+								(line) => <tspan x="0" dy={lineHeight}>{line}</tspan>
+							)
+						}
+				  </text>
+				</g>
+			</g>
+		)
+	}
+}
+
+
+
 
 export default App;
