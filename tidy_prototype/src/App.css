@@ -54,11 +54,10 @@ body {
 .u-clickable {
 	cursor: pointer;
 }
-/*
+
 .u-clickable:hover {
 	opacity: .7;
 }
-*/
 
 .u-unselectable {
 	-webkit-user-select: none; /* Safari */
@@ -68,7 +67,4 @@ body {
 }
 
 .renderer {
-	border: 1px solid black;
-	width: 100%;
-	height: 100%;
 }
