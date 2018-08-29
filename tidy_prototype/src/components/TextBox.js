@@ -1,5 +1,10 @@
 import React, { Component } from 'react';
 
+// TODO:
+//   hover for ball on edge (do outside)
+//   eventing ability to drag
+//
+
 export default class TextBox extends Component {
   constructor() {
     super()
