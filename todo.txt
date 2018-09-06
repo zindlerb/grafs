@@ -1,10 +1,9 @@
-text box component
-	line breaks in svg
-	border box
-render ranks for bounding box
-click inside for box
-new boxes
-connecting boxes
-double click on box to edit
-drag box into zones
-avoiding line connections
+[ ] hover for ball on text box
+[ ] double click to edit
+[ ] click to create box - bounding box + 1 node
+[ ] hover on diff sections of bounding box
+[ ] layout bounding box with plus areas for new boxes
+[ ] save state flag
+[ ] drag to connect boxes
+[ ] drag to move boxes
+[ ] drag to move whole field
