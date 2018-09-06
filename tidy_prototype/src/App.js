@@ -11,6 +11,8 @@ import Renderer from './components/Renderer.js'
 
 import {isPointWithinRect, getRectMidpoint} from './utilities/general.js'
 
+window.isDebugMode = false
+
 class App extends Component {
   constructor() {
     super()
@@ -24,7 +26,7 @@ class App extends Component {
   render() {
     return (
       <div className="App w-100 h-100">
-        <Renderer/>
+        <Renderer {...this.state} />
       </div>
     );
   }

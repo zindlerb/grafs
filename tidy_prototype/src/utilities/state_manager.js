@@ -1,11 +1,36 @@
+import {Pos} from '../data_types.js'
+
+class GraphContainer {
+  constructor(pos) {
+    this.nodeMatrix = []
+    this.graph = new Graph()
+    this.pos = pos
+  }
+
+  addNodeToMatrix(rank, order, text) {
+    const node = this.graph.addNode({ text })
+    if (!this.nodeMatrix[rank]) {
+      this.nodeMatrix[rank] = []
+    }
+
+    this.nodeMatrix[rank].splice(order, 0, node.id)
+  }
+}
+
+const graphContainer = new GraphContainer(new Pos(50, 25))
+
+graphContainer.addNodeToMatrix(0, 0, 'Ravi')
+graphContainer.addNodeToMatrix(0, 1, 'Matt')
+graphContainer.addNodeToMatrix(1, 0, 'Brittany')
+graphContainer.addNodeToMatrix(2, 0, 'Alisha')
+
 class StateManager {
 	constructor() {
 		this.stateChangeCallbacks = []
 		this.state = {
-			graphContainers: [],
-			ranks: _.fill(Array(6), undefined),
-			rankSpacing: 40,
-			orderSpacing: 40,
+			graphContainers: [
+        graphContainer
+      ]
 		}
 	}
 
