@@ -5,12 +5,18 @@ import MoveArrowIcon from './icons/MoveArrowIcon.js'
 import Rect from './Rect.js'
 import {Pos} from '../data_types.js'
 
-const GraphContainer = ({rect, graphContainerId}) => {
+const GraphContainer = ({rect, graphContainerId, children}) => {
   const moveIconSize = 20
   const moveIconSpacing = 10
 
   return (
-    <g>
+    <g onMouseMove={(e) => {
+        stateManager.setState((state) => {
+          state.uiState.cursorState = null
+        })
+
+        e.stopPropagation()
+    }}>
       <MoveArrowIcon
         onMouseDown={(e) => dragManager.start(e, {
             rootX: rect.pos.x,
@@ -29,6 +35,7 @@ const GraphContainer = ({rect, graphContainerId}) => {
         rect={rect}
         borderColor="black"
       />
+      {children}
     </g>
   )
 }

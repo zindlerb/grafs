@@ -1,3 +1,6 @@
+import {genId} from './utilities/general.js'
+import {Graph} from './graph_lib.js'
+
 export class Pos {
 	constructor(x, y) {
 		this.x = x;
@@ -15,6 +18,27 @@ export class Pos {
     return new Pos(this.x + p.x, this.y + p.y)
   }
 }
+
+export class GraphContainer {
+  constructor(pos) {
+    this.id = genId()
+    this.nodeMatrix = []
+    this.graph = new Graph()
+    this.pos = pos
+
+    this.addNodeToMatrix(0, 0, 'Edit Text Here')
+  }
+
+  addNodeToMatrix(rank, order, text) {
+    const node = this.graph.addNode({ text })
+    if (!this.nodeMatrix[rank]) {
+      this.nodeMatrix[rank] = []
+    }
+
+    this.nodeMatrix[rank].splice(order, 0, node.id)
+  }
+}
+
 
 export class Rect {
   constructor(pos, width, height) {

@@ -1,4 +1,5 @@
 import $ from 'jquery'
+import {Pos} from '../data_types.js'
 
 export const genId = () => Math.random().toString().replace('.', '')
 
@@ -18,12 +19,13 @@ export function getRectMidpoint({ x, y, width, height }) {
 	}
 }
 
-export const getOffsetPos = (ev) => {
-  const rect = ev.target.getBoundingClientRect();
-  return new Pos(
-    ev.clientX - rect.x,
-    ev.clientY - rect.y
-  )
+export const getOffsetPos = (ev, fromGlobalOffset=false) => {
+  if (fromGlobalOffset) {
+    return new Pos(ev.clientX, ev.clientY)
+  } else {
+    const rect = ev.target.getBoundingClientRect();
+    return new Pos(ev.clientX - rect.x, ev.clientY - rect.y)
+  }
 }
 
 export function getRandomColor() {
