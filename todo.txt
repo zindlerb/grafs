@@ -1,9 +1,21 @@
-[ ] hover for ball on text box
-[ ] double click to edit
+[x] hover for ball on text box
+[x] render container
+[x] drag container around
+[x] fix dragging
+[x] double click to edit
+[ ] design nicer looking interface for new boxes
+[ ] click to make new boxes
+  [ ] sizing to accomadate above and below
+  [ ] plus icons for the creation of new items
 [ ] click to create box - bounding box + 1 node
-[ ] hover on diff sections of bounding box
-[ ] layout bounding box with plus areas for new boxes
-[ ] save state flag
-[ ] drag to connect boxes
+  [ ] grayed out box below cursor
 [ ] drag to move boxes
+[ ] drag to connect boxes
+[ ] save state flag
+[ ] fix up the line drawing from naive version
 [ ] drag to move whole field
+
+
+Design problems:
+- how to represent adding new containers?
+-
