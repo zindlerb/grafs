@@ -3,6 +3,7 @@ import Rect from './Rect.js'
 import TextBox from './TextBox.js'
 import {Pos} from '../data_types.js'
 import numeric from 'numeric'
+import stateManager from '../utilities/state_manager.js'
 
 function pointOnRectEdgeAtPercentage(percentageAlongEdge, rect) {
 	const {pos, width, height} = rect
@@ -95,6 +96,7 @@ class Node extends Component {
   render() {
     const borderHitboxWidth = 15
     let borderDot
+    let textBox
 
 		if (this.state.isHoveringBorder && this.state.percentageAlongRect) {
       const pointPos = pointOnRectEdgeAtPercentage(this.state.percentageAlongRect, this.props.rect)
@@ -102,16 +104,18 @@ class Node extends Component {
 		}
 
     return (
-      <g>
+      <g onDoubleClick={(e) => {
+          stateManager.setState(({uiState}) => uiState.editingNodeId = this.props.nodeId)
+          e.stopPropagation()
+      }}
+      onClick={(e) => e.stopPropagation()}>
         {borderDot}
         <TextBox
           isEditing={this.props.isEditing}
           onBlur={this.props.onBlur}
-          pos={this.props.rect.pos}
-          width={this.props.rect.width}
-          height={this.props.rect.height}
+          rect={this.props.rect}
           text={this.props.text}
-          padding={30} />
+          padding={this.props.padding} />
         <Rect
           onMouseEnter={this.onEnterOuterHitbox}
           onMouseLeave={this.onExitOuterHitbox}

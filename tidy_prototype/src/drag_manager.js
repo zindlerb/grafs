@@ -30,22 +30,21 @@ class DragManager {
   }
 
   start(mouseDownEvent, spec) {
-		console.log('mouseDownEvent', mouseDownEvent)
     this.drag = new Drag(mouseDownEvent, spec);
   }
 
   _onMouseMove(mouseMoveEvent) {
     if (!this.drag) return;
+    const dx = mouseMoveEvent.clientX - this.drag.originalX;
+    const dy = mouseMoveEvent.clientY - this.drag.originalY;
     if (!this.drag.consummated) {
       // Check if we should consummate.
-      const dx = mouseMoveEvent.clientX - this.drag.originalX;
-      const dy = mouseMoveEvent.clientY - this.drag.originalY;
       const d = Math.max(Math.abs(dx), Math.abs(dy));
       if (d > 3) {
         this._consummate(mouseMoveEvent);
       }
     } else if (this.drag.onDrag) {
-        this.drag.onDrag(mouseMoveEvent);
+      this.drag.onDrag(mouseMoveEvent, {dx, dy});
     }
   }
 

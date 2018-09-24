@@ -1,3 +1,7 @@
+import $ from 'jquery'
+
+export const genId = () => Math.random().toString().replace('.', '')
+
 export function isPointWithinRect(point, rect) {
 	return (
 		point.x > rect.x &&
@@ -29,4 +33,10 @@ export function getRandomColor() {
     color += letters[Math.floor(Math.random() * 16)];
   }
   return color;
+}
+
+export const getTextBoxDimensions = (text, padding) => {
+  const sizingEl = $(`<div>${text}</div>`).css({visibility: 'hidden', maxWidth: 200, position: 'absolute'})
+  $('body').prepend(sizingEl)
+  return { width: sizingEl.width() + (padding * 2), height: sizingEl.height() + (padding * 2)}
 }
