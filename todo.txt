@@ -1,21 +1,12 @@
-[x] hover for ball on text box
-[x] render container
-[x] drag container around
-[x] fix dragging
-[x] double click to edit
-[ ] design nicer looking interface for new boxes
-[ ] click to make new boxes
-  [ ] sizing to accomadate above and below
-  [ ] plus icons for the creation of new items
-[ ] click to create box - bounding box + 1 node
-  [ ] grayed out box below cursor
-[ ] drag to move boxes
-[ ] drag to connect boxes
-[ ] save state flag
-[ ] fix up the line drawing from naive version
-[ ] drag to move whole field
+[ ] interface for adding container
+[ ] icons for moving and deleting container
+[ ] container looking correct
+[ ] hover to make container appear
+[ ] icons to add box
+[ ] delete box with delete key
+[ ] save state
+[ ] drag box functionality
 
 
-Design problems:
-- how to represent adding new containers?
--
+Wants:
+- flexbox like layout model. Center - align ect.
