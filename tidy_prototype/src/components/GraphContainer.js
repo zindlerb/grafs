@@ -2,21 +2,27 @@ import React from 'react';
 import dragManager from '../drag_manager.js'
 import stateManager from '../utilities/state_manager.js'
 import MoveArrowIcon from './icons/MoveArrowIcon.js'
+import DeleteIcon from './icons/DeleteIcon.js'
 import Rect from './Rect.js'
 import {Pos} from '../data_types.js'
+import {COLORS} from '../constants.js'
 
 const GraphContainer = ({rect, graphContainerId, children}) => {
-  const moveIconSize = 20
-  const moveIconSpacing = 10
+  const moveIconSize = 25
+  const moveIconSpacing = 5
+
+  const containerRect = rect.expand(moveIconSize + moveIconSpacing + 10)
 
   return (
-    <g onMouseMove={(e) => {
-        stateManager.setState((state) => {
-          state.uiState.cursorState = null
-        })
+    <g
+      onMouseMove={(e) => {
+          stateManager.setState((state) => {
+            state.uiState.cursorState = null
+          })
 
-        e.stopPropagation()
-    }}>
+          e.stopPropagation()
+      }}>
+      <Rect rect={containerRect} backgroundColor="transparent"/>
       <MoveArrowIcon
         onMouseDown={(e) => dragManager.start(e, {
             rootX: rect.pos.x,
@@ -31,9 +37,20 @@ const GraphContainer = ({rect, graphContainerId, children}) => {
         y={rect.pos.y - moveIconSize - moveIconSpacing}
         size={moveIconSize}
       />
+      <DeleteIcon
+        onClick={(e) => {
+            stateManager.setState((state) => {
+              delete state.graphContainers[graphContainerId]
+            })
+            e.preventDefault()
+        }}
+        x={rect.pos.x + moveIconSize}
+        y={rect.pos.y - moveIconSize - moveIconSpacing}
+        size={moveIconSize}
+      />
       <Rect
         rect={rect}
-        borderColor="black"
+        borderColor={COLORS.lightGrey}
       />
       {children}
     </g>

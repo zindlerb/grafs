@@ -8,7 +8,9 @@ import Rect from './Rect.js'
 import GraphContainer from './GraphContainer.js'
 import stateManager from '../utilities/state_manager.js'
 import {COLORS} from '../constants.js'
+import AddNodeIcon from './icons/AddNodeIcon.js'
 
+const ICON_SIZE = 25
 const RANK_PADDING = 20
 const ORDER_PADDING = 20
 const TEXT_BOX_PADDING = 15
@@ -30,20 +32,16 @@ const TextEditField = ({onChange, value, rect}) => {
 }
 
 const generateLayout = (graphContainer, uiState) => {
-  // rank size: size of largest node height
   const nodeData = []
   const root = graphContainer.pos
-
-  // box sizing
-  // row heights - tallest box in row + padding
-  // width - widest row + padding
-  // centering - (total width - total box width) / 2 start pos
 
   let containerWidth;
   let containerHeight;
   let rankHeights = []
   let rankWidths = []
   let editComponent;
+  let emptyRankHeight = 60
+  let emptyOrderWidth = 60
 
   graphContainer.nodeMatrix.forEach((rank, rankInd) => {
     let rankWidth = 0
@@ -63,17 +61,10 @@ const generateLayout = (graphContainer, uiState) => {
     rankWidths[rankInd] = rankWidth
   })
 
-  containerHeight = rankHeights.reduce((a, b) => a + b, 0)
-  containerWidth = rankWidths.reduce((a, b) => Math.max(a, b), 0)
+  containerHeight = rankHeights.reduce((a, b) => a + b, 0) + (emptyRankHeight * 2)
+  containerWidth = rankWidths.reduce((a, b) => Math.max(a, b), 0) + (emptyOrderWidth * 2)
 
-  /*
-  console.log('containerWidth', containerWidth)
-  console.log('containerHeight', containerHeight)
-  console.log('rankHeights', rankHeights)
-  console.log('rankWidths', rankWidths)
-  */
-
-  let rankY = 0
+  let rankY = emptyRankHeight
   graphContainer.nodeMatrix.forEach((rank, rankInd) => {
     let rankHeight = rankHeights[rankInd]
     let rankWidth = rankWidths[rankInd]
@@ -102,6 +93,68 @@ const generateLayout = (graphContainer, uiState) => {
     rankY += rankHeight
   })
 
+  let currentRankHeight = 0
+  const rankDividers = [emptyRankHeight].concat(rankHeights).map((rankHeight) => {
+    currentRankHeight += rankHeight
+    const lineComp = (
+      <line
+        x1={root.x} y1={root.y + currentRankHeight}
+        x2={root.x + containerWidth} y2={root.y + currentRankHeight}
+        stroke={COLORS.lightGrey}
+        strokeDasharray="4"
+      />
+    )
+    return lineComp
+  })
+
+  currentRankHeight = 0;
+  let addNodeIcons = [];
+  const addIconAction = (rank, order) => () => {
+    stateManager.setState((state) => {
+      state.graphContainers[graphContainer.id].addNodeToMatrix(rank, order, 'Insert Text')
+    })
+  }
+
+  [emptyRankHeight].concat(rankHeights).concat([emptyRankHeight]).forEach((rankHeight, ind, arr) => {
+    let icon
+    if (ind === 0) {
+      addNodeIcons.push(
+        <AddNodeIcon
+          x={root.x + ((containerWidth/2) - (ICON_SIZE/2))}
+          y={root.y + ((rankHeight/2) - (ICON_SIZE/2))}
+          size={ICON_SIZE}
+          onClick={addIconAction(ind, 0)}
+        />
+      )
+    } else if (ind === (arr.length - 1)) {
+      addNodeIcons.push(
+        <AddNodeIcon
+          x={root.x + ((containerWidth/2) - (ICON_SIZE/2))}
+          y={root.y + currentRankHeight + ((rankHeight/2) - (ICON_SIZE/2))}
+          size={ICON_SIZE}
+          onClick={addIconAction(ind, 0)}
+        />
+      )
+    } else {
+      addNodeIcons = addNodeIcons.concat([
+        <AddNodeIcon
+          x={root.x + ICON_SIZE}
+          y={root.y + currentRankHeight + ((rankHeight/2) - (ICON_SIZE/2))}
+          size={ICON_SIZE}
+          onClick={addIconAction(ind, 0)}
+        />,
+        <AddNodeIcon
+          x={root.x + (containerWidth - (ICON_SIZE * 2))}
+          y={root.y + currentRankHeight + ((rankHeight/2) - (ICON_SIZE/2))}
+          size={ICON_SIZE}
+          onClick={addIconAction(ind - 1, graphContainer.nodeMatrix[ind - 1].length - 1)}
+        />,
+      ])
+    }
+
+    currentRankHeight += rankHeight
+  })
+
   const nodeComponents = nodeData.map(({shape, attrs, isEditing}) => {
     return <Node isEditing={isEditing} rect={shape} text={attrs.text} padding={TEXT_BOX_PADDING} nodeId={attrs.nodeId} />
   })
@@ -111,7 +164,9 @@ const generateLayout = (graphContainer, uiState) => {
       rect={new dataTypes.Rect(root, containerWidth, containerHeight)}
       graphContainerId={graphContainer.id}
     >
-    {nodeComponents}
+      {addNodeIcons}
+      {rankDividers}
+      {nodeComponents}
     </GraphContainer>
   )
 
@@ -141,7 +196,10 @@ const AddContainerCursor = ({pos}) => {
   const width = 50
   const height = 30
   const bluePlusSize = 20
-  const bluePlusPos = pos.add(new dataTypes.Pos(width/2, height/2))
+  pos = pos.add(new dataTypes.Pos(-10, -10))
+  const offset = 5
+
+  const bluePlusPos = pos.add(new dataTypes.Pos((width/2) - offset, (height/2) + offset))
 
   const bluePlus = (
     <text
@@ -155,7 +213,9 @@ const AddContainerCursor = ({pos}) => {
 
   return (
     <g>
-      <Rect rect={new dataTypes.Rect(pos, width, height)} borderColor="black" />
+      <Rect
+        rect={new dataTypes.Rect(pos, width, height)}
+        borderColor={COLORS.lightGrey} />
       {bluePlus}
     </g>
   )

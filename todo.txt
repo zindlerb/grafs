@@ -1,12 +1,13 @@
-[ ] interface for adding container
-[ ] icons for moving and deleting container
-[ ] container looking correct
-[ ] hover to make container appear
+[x] interface for adding container
+[x] icons for moving and deleting container
+[x] container looking correct
 [ ] icons to add box
 [ ] delete box with delete key
 [ ] save state
 [ ] drag box functionality
 
+Later:
+  [ ] hover to make container appear
 
 Wants:
 - flexbox like layout model. Center - align ect.

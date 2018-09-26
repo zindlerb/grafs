@@ -40,5 +40,7 @@ export function getRandomColor() {
 export const getTextBoxDimensions = (text, padding) => {
   const sizingEl = $(`<div>${text}</div>`).css({visibility: 'hidden', maxWidth: 200, position: 'absolute'})
   $('body').prepend(sizingEl)
-  return { width: sizingEl.width() + (padding * 2), height: sizingEl.height() + (padding * 2)}
+  const size = { width: sizingEl.width() + (padding * 2), height: sizingEl.height() + (padding * 2)}
+  sizingEl.remove()
+  return size
 }
