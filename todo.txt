@@ -1,10 +1,15 @@
 [x] interface for adding container
 [x] icons for moving and deleting container
 [x] container looking correct
-[ ] icons to add box
-[ ] delete box with delete key
-[ ] save state
+[x] icons to add box
+    [ ] get all icons working
+[x] delete box with delete key
+[ ] connecting boxes
+[ ] selecting and deleting connections
 [ ] drag box functionality
+[ ] multi line text
+[ ] better arrow drawing
+[ ] save state
 
 Later:
   [ ] hover to make container appear

@@ -5,10 +5,10 @@ class StateManager {
 		this.stateChangeCallbacks = []
 		this.state = {
 			graphContainers: {},
-      uiState: {
-        editingNodeId: null,
-        cursorState: null
-      }
+			uiState: {
+				editingNodeId: null,
+				cursorState: null,
+			},
 		}
 	}
 
@@ -16,19 +16,19 @@ class StateManager {
 		this.stateChangeCallbacks.push(cb)
 	}
 
-  setState(arg) {
-    if (typeof arg === 'function') {
-      arg(this.state)
-    } else {
-      Object.assign(this.state, arg)
-    }
+	setState(arg) {
+		if (typeof arg === 'function') {
+			arg(this.state)
+		} else {
+			Object.assign(this.state, arg)
+		}
 
-    this.triggerRender()
-  }
+		this.triggerRender()
+	}
 
-  triggerRender() {
-    this.stateChangeCallbacks.forEach((stateCb) => stateCb(this.state))
-  }
+	triggerRender() {
+		this.stateChangeCallbacks.forEach(stateCb => stateCb(this.state))
+	}
 }
 
 const stateManager = new StateManager()
