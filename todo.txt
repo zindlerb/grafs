@@ -10,6 +10,9 @@
 [ ] multi line text
 [ ] better arrow drawing
 [ ] save state
+[ ] padding whole map
+[ ] zooming whole map
+
 
 Later:
   [ ] hover to make container appear
