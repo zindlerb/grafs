@@ -1,14 +1,11 @@
 import _ from 'lodash'
+import { Vec, VectorGraphData } from '../data_types.js'
 
 class StateManager {
 	constructor() {
 		this.stateChangeCallbacks = []
 		this.state = {
-			graphContainers: {},
-			uiState: {
-				editingNodeId: null,
-				cursorState: null,
-			},
+			vectorGraphs: [new VectorGraphData({ x: 40, y: 40 }, [new Vec(30, 65)])],
 		}
 	}
 
