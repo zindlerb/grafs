@@ -10,3 +10,8 @@ export const ORDER_PADDING = 20
 export const TEXT_BOX_PADDING = 15
 export const EMPTY_RANK_HEIGHT = 60
 export const EMPTY_ORDER_WIDTH = 60
+
+export const CURSOR_STATES = {
+	addContainer: 'ADD_CONTAINER',
+	dragEdge: 'DRAG_EDGE',
+}

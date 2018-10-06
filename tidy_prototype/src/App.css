@@ -13,6 +13,14 @@ body {
 
 }
 
+.c-crosshair {
+	cursor: crosshair;
+}
+
+.c-move {
+	cursor: move;
+}
+
 .graph-container {
 	fill: transparent;
 	stroke: black;
@@ -82,4 +90,8 @@ body {
 }
 
 .renderer {
+}
+
+.click-through {
+  pointer-events: none;
 }

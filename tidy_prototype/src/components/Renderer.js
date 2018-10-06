@@ -15,6 +15,7 @@ import {
 	TEXT_BOX_PADDING,
 	EMPTY_RANK_HEIGHT,
 	EMPTY_ORDER_WIDTH,
+	CURSOR_STATES,
 } from '../constants.js'
 import AddNodeIcon from './icons/AddNodeIcon.js'
 
@@ -37,6 +38,7 @@ const TextEditField = ({ onChange, value, rect }) => {
 
 const generateLayout = (graphContainer, uiState) => {
 	const nodeData = []
+	const nodeDataMap = {}
 	const root = graphContainer.pos
 
 	let containerWidth
@@ -87,6 +89,7 @@ const generateLayout = (graphContainer, uiState) => {
 				rawNode: node,
 			}
 
+			nodeDataMap[nodeId] = nodeDatum
 			nodeData.push(nodeDatum)
 
 			rankX += width
@@ -165,17 +168,41 @@ const generateLayout = (graphContainer, uiState) => {
 			currentRankHeight += rankHeight
 		})
 
-	const nodeComponents = nodeData.map(({ shape, attrs, isEditing }) => {
-		return (
-			<Node
-				isEditing={isEditing}
-				rect={shape}
-				text={attrs.text}
-				padding={TEXT_BOX_PADDING}
-				nodeId={attrs.nodeId}
-			/>
-		)
-	})
+	const nodeComponents = _.flatten(
+		nodeData.map(({ shape, attrs, isEditing, rawNode }) => {
+			let nodesAndEdges = [
+				<Node
+					isEditing={isEditing}
+					rect={shape}
+					text={attrs.text}
+					padding={TEXT_BOX_PADDING}
+					containerId={graphContainer.id}
+					nodeId={attrs.nodeId}
+				/>,
+			]
+
+			if (rawNode.fromEdges().length > 0) {
+				rawNode.fromEdges().forEach(({ vertices }) => {
+					const [from, to] = vertices
+					const fromRect = nodeDataMap[from.id].shape
+					const toRect = nodeDataMap[to.id].shape
+
+					nodesAndEdges.push(
+						<line
+							x1={fromRect.pos.x}
+							y1={fromRect.pos.y}
+							x2={toRect.pos.x}
+							y2={toRect.pos.y}
+							stroke="black"
+							strokeWidth={1}
+						/>
+					)
+				})
+			}
+
+			return nodesAndEdges
+		})
+	)
 
 	const containerComponent = (
 		<GraphContainer
@@ -243,6 +270,7 @@ export default class Renderer extends Component {
 		let allDomNodes = []
 		let allShapes = []
 		let addContainerCursor
+		let connectEdgeCursor
 
 		_.toArray(this.props.graphContainers).forEach(graphContainer => {
 			const { components, domComponents } = generateLayout(graphContainer, this.props.uiState)
@@ -254,8 +282,28 @@ export default class Renderer extends Component {
 		const cursorStateType = _.get(this.props.uiState, 'cursorState.stateType')
 		const cursorStatePos = _.get(this.props.uiState, 'cursorState.pos')
 
-		if (cursorStateType === 'container') {
+		if (cursorStateType === CURSOR_STATES.addContainer) {
 			addContainerCursor = <AddContainerCursor pos={cursorStatePos} />
+		} else if (cursorStateType === CURSOR_STATES.dragEdge) {
+			const originalPos = _.get(this.props.uiState, 'cursorState.originalPos')
+			connectEdgeCursor = [
+				<line
+					x1={originalPos.x}
+					y1={originalPos.y}
+					x2={cursorStatePos.x}
+					y2={cursorStatePos.y}
+					stroke="black"
+					strokeWidth={2}
+					className="click-through"
+				/>,
+				<circle
+					cx={cursorStatePos.x}
+					cy={cursorStatePos.y}
+					r={3}
+					fill="tomato"
+					className="click-through"
+				/>,
+			]
 		}
 
 		return (
@@ -263,27 +311,38 @@ export default class Renderer extends Component {
 				className="w-100 h-100"
 				onClick={e => {
 					const cursorStateType = _.get(this.props.uiState, 'cursorState.stateType')
-					if (cursorStateType === 'container') {
+					if (cursorStateType === CURSOR_STATES.addContainer) {
 						stateManager.setState(state => {
 							const graphContainer = new dataTypes.GraphContainer(getOffsetPos(e, true))
 							state.graphContainers[graphContainer.id] = graphContainer
 						})
 					}
 					this.deSelect()
+				}}
+				onMouseUp={() => {
+					const cursorStateType = _.get(this.props.uiState, 'cursorState.stateType')
+					if (cursorStateType === CURSOR_STATES.dragEdge) {
+						stateManager.setState(state => {
+							state.uiState.cursorState = null
+						})
+					}
 				}}>
 				{allDomNodes}
 				<svg
 					className="renderer w-100 h-100 db"
 					onMouseMove={e => {
-						stateManager.state.uiState.cursorState = {
-							stateType: 'container',
-							pos: getOffsetPos(e, true),
+						if (cursorStateType !== CURSOR_STATES.dragEdge) {
+							stateManager.state.uiState.cursorState = {
+								stateType: CURSOR_STATES.addContainer,
+								pos: getOffsetPos(e, true),
+							}
 						}
 						stateManager.triggerRender()
 						e.stopPropagation()
 					}}>
 					{addContainerCursor}
 					{allShapes}
+					{connectEdgeCursor}
 				</svg>
 			</div>
 		)
