@@ -19,3 +19,7 @@ Later:
 
 Wants:
 - flexbox like layout model. Center - align ect.
+
+
+knowledge debt:
+https://stackoverflow.com/questions/9043805/test-if-two-lines-intersect-javascript-function
