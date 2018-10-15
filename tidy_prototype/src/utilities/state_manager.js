@@ -1,10 +1,20 @@
 import _ from 'lodash'
+import { GraphContainer, Pos } from '../data_types.js'
+
+const gc = new GraphContainer(new Pos(100, 100))
+
+gc.addNodeToMatrix(1, 0, 'im a node')
+gc.addNodeToMatrix(2, 0, 'im a node')
+
+gc.graph.addEdge(gc.nodeMatrix[0][0], gc.nodeMatrix[2][0])
 
 class StateManager {
 	constructor() {
 		this.stateChangeCallbacks = []
 		this.state = {
-			graphContainers: {},
+			graphContainers: {
+				[gc.id]: gc,
+			},
 			uiState: {
 				editingNodeId: null,
 				cursorState: null,

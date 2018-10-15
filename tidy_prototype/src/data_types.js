@@ -91,6 +91,24 @@ export class Rect {
 		}
 	}
 
+	lineSegments() {
+		const { topLeft, topRight, bottomLeft, bottomRight } = this.corners()
+		return [
+			new Line(topLeft, topRight),
+			new Line(topRight, bottomRight),
+			new Line(bottomLeft, bottomRight),
+			new Line(topLeft, bottomLeft),
+		]
+	}
+
+	doesIntersectLine(testLine) {
+		return _.some(this.lineSegments(), line => line.intersects(testLine))
+	}
+
+	centerPoint() {
+		this.corners().center
+	}
+
 	// Private
 	_nearestSide(pos) {
 		if (pos.x < this.x) {
@@ -102,6 +120,31 @@ export class Line {
 	constructor(posA, posB) {
 		this.posA = posA
 		this.posB = posB
+	}
+
+	intersects(line1, line2) {
+		this._intersects(
+			line1.posA.x,
+			line1.posA.y,
+			line1.posB.x,
+			line1.posB.y,
+			line2.posA.x,
+			line2.posA.y,
+			line2.posB.x,
+			line2.posB.y
+		)
+	}
+
+	_intersects(a, b, c, d, p, q, r, s) {
+		var det, gamma, lambda
+		det = (c - a) * (s - q) - (r - p) * (d - b)
+		if (det === 0) {
+			return false
+		} else {
+			lambda = ((s - q) * (r - a) + (p - r) * (s - b)) / det
+			gamma = ((b - d) * (r - a) + (c - a) * (s - b)) / det
+			return 0 < lambda && lambda < 1 && (0 < gamma && gamma < 1)
+		}
 	}
 
 	closestPointOnLine() {}

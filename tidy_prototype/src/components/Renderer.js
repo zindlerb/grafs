@@ -19,6 +19,41 @@ import {
 } from '../constants.js'
 import AddNodeIcon from './icons/AddNodeIcon.js'
 
+const layoutEdges = ({ fromRect, toRect, rectMatrix }) => {
+	// sort all rects by y
+	const allRects = _.flatten(rectMatrix)
+	const rectsSortedByY = _.sortBy(allRects, ({ pos }) => pos.y)
+	const startToFinishLine = new Line(fromRect.centerPoint(), toRect.centerPoint())
+	const intersectingRects = allRects.filter(rect => {
+		return rect.doesIntersectLine(startToFinishLine)
+	})
+
+	const rawLinePoints = [fromRect.centerPoint()]
+	const endPoint = toRect.centerPoint()
+
+	const findFirstIntersectionBetweenPoints = (p1, p2, rectsSortedByY) => {
+		const line = new Line(p1, p2)
+		rectsSortedByY.find(rect => {
+			return rect.doesIntersectLine(line)
+		})
+	}
+
+	let firstIntersectionBetweenPoints = findFirstIntersectionBetweenPoints(
+		_.last(rawLinePoints),
+		endPoint
+	)
+
+	while (firstIntersectionBetweenPoints) {
+		// find new point
+		//
+
+		firstIntersectionBetweenPoints = findFirstIntersectionBetweenPoints(
+			_.last(rawLinePoints),
+			endPoint
+		)
+	}
+}
+
 const TextEditField = ({ onChange, value, rect }) => {
 	return (
 		<textarea
@@ -182,6 +217,12 @@ const generateLayout = (graphContainer, uiState) => {
 			]
 
 			if (rawNode.fromEdges().length > 0) {
+				// fromNodeCenter
+				// toNodeCenter
+				// first intersection
+				// move
+				// loop
+				// when no intersections
 				rawNode.fromEdges().forEach(({ vertices }) => {
 					const [from, to] = vertices
 					const fromRect = nodeDataMap[from.id].shape
