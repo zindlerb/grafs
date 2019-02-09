@@ -1,6 +1,4 @@
 import $ from 'jquery'
-import { Pos } from '../data_types.js'
-
 export const genId = () => {
 	return Math.random()
 		.toString()
@@ -25,10 +23,10 @@ export function getRectMidpoint({ x, y, width, height }) {
 
 export const getOffsetPos = (ev, fromGlobalOffset = false) => {
 	if (fromGlobalOffset) {
-		return new Pos(ev.clientX, ev.clientY)
+		return { x: ev.clientX, y: ev.clientY }
 	} else {
 		const rect = ev.target.getBoundingClientRect()
-		return new Pos(ev.clientX - rect.x, ev.clientY - rect.y)
+		return { x: ev.clientX - rect.x, y: ev.clientY - rect.y }
 	}
 }
 

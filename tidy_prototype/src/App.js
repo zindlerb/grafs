@@ -1,132 +1,143 @@
-import classnames from 'classnames'
+import cx from 'classnames'
 import _ from 'lodash'
 import $ from 'jquery'
 import dragManager from './drag_manager.js'
 import React, { Component } from 'react'
 import './App.css'
 import stateManager from './utilities/state_manager.js'
-import { Vec, VectorGraphData } from './data_types.js'
-
+import { D_KEY, F_KEY } from './utilities/keycodes.js'
 import { isPointWithinRect, getRectMidpoint } from './utilities/general.js'
 
-const genId = () =>
-	Math.random()
-		.toString()
-		.replace('.', '')
+/*
+   Idea:
+   data => render
 
-window.isDebugMode = false
+   renderer has no smarts it does what it is told and handles events.
 
-const GRAY = '#e0e0e0'
-const DARK_GRAY = '#6d6d6d'
+   nodes:
+   id
+   box: x, y, widht, height
+   text: x, y, content
+   interactionState: isHovered, isActive .. might just need is active
 
-const DragHandle = ({ onDrag, pos, r, initialValues }) => {
-	return (
-		<circle
-			className="u-moveable"
-			cx={pos.x}
-			cy={pos.y}
-			r={r || 5}
-			fill="tomato"
-			onMouseDown={e => {
-				dragManager.start(e, {
-					initialValues,
-					onDrag(_, { dy, dx }) {
-						onDrag({ dy, dx }, this.initialValues)
-					},
-				})
-			}}
-		/>
-	)
+   edge:
+   line: x1, y1, x2, y2
+   text: x, y, content
+ */
+
+const Node = ({ box, text, interactionState }) => {
+  return (
+    <g>
+    <text
+    x={text.x}
+        y={text.y}>
+        {text.content}
+      </text>
+      <rect
+        x={box.x}
+        y={box.y}
+        width={box.width}
+        height={box.height}
+      />
+    </g>
+  )
 }
 
-const VectorGraph = ({ graphData, size, gridSpacing }) => {
-	size = size || 100
-	const { pos, vecs } = graphData
-	const coordinatePlaneOrigin = { x: size / 2, y: size / 2 }
-	// should be able to do all this coordinate plane stuff with transforms
-	gridSpacing = gridSpacing || 5
+const Edge = ({ line, text }) => {
+  return (
+    <g>
+      <text
+        x={text.x}
+        y={text.y}>
+        {text.content}
+      </text>
+      <line
+        x1={line.x1}
+        y1={line.y1}
+        x2={line.x2}
+        y2={line.y2}
+        stroke="black"
+      />
+    </g>
+  )
+}
 
-	let currentX = 0
-	let currentY = 0
+class Renderer extends Component {
+  click() {
+    const { interactionState } = this.props
 
-	let gridLines = []
+    if (interactionState === 'addNode') {
+      stateManager.setState((state) => {
+        state.nodes.push({
 
-	_.times(Math.floor(size / gridSpacing) + 1, ind => {
-		let color = ind === Math.floor(size / gridSpacing) / 2 ? DARK_GRAY : GRAY
-		gridLines.push(<line x1={currentX} y1={0} x2={currentX} y2={size} stroke={color} />)
-		gridLines.push(<line x1={0} y1={currentY} x2={size} y2={currentY} stroke={color} />)
-		currentX += gridSpacing
-		currentY += gridSpacing
-	})
+        })
+      })
+    }
+  }
 
-	return (
-		<g transform={`translate(${pos.x}, ${pos.y})`}>
-			{gridLines}
-			{vecs.map(({ x, y, color }, ind) => {
-				const id = genId()
-				return (
-					<g>
-						<defs>
-							<marker
-								id={id}
-								markerWidth="10"
-								markerHeight="10"
-								refX="0"
-								refY="3"
-								orient="auto"
-								markerUnits="strokeWidth"
-								viewBox="0 0 20 20">
-								<path d="M0,0 L0,6 L9,3 z" fill={color} />
-							</marker>
-						</defs>
-						<line
-							markerEnd={`url(#${id})`}
-							x1={coordinatePlaneOrigin.x}
-							y1={coordinatePlaneOrigin.y}
-							x2={coordinatePlaneOrigin.x + x}
-							y2={coordinatePlaneOrigin.y - y}
-							stroke={color}
-							strokeWidth={4}
-						/>
-						<DragHandle
-							initialValues={{ x, y }}
-							pos={{ x: coordinatePlaneOrigin.x + x, y: coordinatePlaneOrigin.y - y }}
-							onDrag={({ dx, dy }, initialValues) => {
-								stateManager.setState(state => {
-									const vGraph = state.vectorGraphs.find(({ id }) => id === graphData.id)
-									vGraph.vecs[ind].x = initialValues.x + dx
-									vGraph.vecs[ind].y = initialValues.y - dy
-								})
-							}}
-						/>
-					</g>
-				)
-			})}
-		</g>
-	)
+  render() {
+    const { nodes, edges } = this.props
+
+    return (
+      <svg onClick={this.click.bind(this)} className="w-100 h-100 flex-auto">
+        {edges.map((node) => <Edge {...edge}/>)}
+        {nodes.map((node) => <Node {...node}/>)}
+      </svg>
+    )
+  }
+}
+
+const TopBar = ({ interactionState }) => {
+  return (
+    <div className="top-bar flex justify-between pv3 ph4 items-center flex-shrink-0">
+      <div className={cx("help-text", { tomato: interactionState === 'addNode' })}>Hold "D" to add a new node.</div>
+      <div className="flex">
+				<div className="mh1 button clickable">Layout Horizontal</div>
+        <div className="mh1 button clickable">Layout Vertical</div>
+			</div>
+    </div>
+  )
+}
+
+const onKeydown = ({ keyCode }) => {
+  if (D_KEY === keyCode) {
+    stateManager.setState({ interactionState: 'addNode' })
+  }
+}
+
+const onKeyup = ({ keyCode }) => {
+  if (D_KEY === keyCode) {
+    stateManager.setState({ interactionState: 'move' })
+  }
 }
 
 class App extends Component {
-	constructor() {
-		super()
-		this.state = stateManager.state
-	}
+  constructor() {
+    super()
+    this.state = stateManager.state
+  }
 
-	componentDidMount() {
-		stateManager.registerStateCallback(state => this.setState(state))
-	}
+  componentDidMount() {
+    window.addEventListener('keydown', onKeydown)
+    window.addEventListener('keyup', onKeyup)
+    stateManager.registerStateCallback(state => this.setState(state))
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', onKeydown)
+    window.removeEventListener('keyup', onKeyup)
+  }
 
 	render() {
+    const { interactionState } = this.state
+
 		return (
-			<div className="App w-100 h-100">
-				<svg className="w-100 h-100">
-					{this.state.vectorGraphs.map(graphData => {
-						return <VectorGraph graphData={graphData} size={300} gridSpacing={15} />
-					})}
-				</svg>
+			<div className={cx('app h-100 flex flex-column', interactionState)}>
+				<TopBar interactionState={interactionState} />
+				<Renderer {...this.state} />
 			</div>
 		)
-	}
+  }
 }
 
 export default App

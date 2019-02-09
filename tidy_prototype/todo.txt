@@ -1,0 +1,7 @@
+- get layout to work with text
+- get get selecting of nodes to work
+- get dragging of box to work
+- get connecting of boxes to work
+- get selecting of edge to work
+- get deleteing to work nodes and edges
+...

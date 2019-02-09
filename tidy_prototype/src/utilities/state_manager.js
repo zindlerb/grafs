@@ -1,11 +1,13 @@
 import _ from 'lodash'
-import { Vec, VectorGraphData } from '../data_types.js'
+import { genId } from './general.js'
 
 class StateManager {
 	constructor() {
 		this.stateChangeCallbacks = []
 		this.state = {
-			vectorGraphs: [new VectorGraphData({ x: 40, y: 40 }, [new Vec(30, 65)])],
+      interactionState: 'move',
+			edges: [],
+      nodes: []
 		}
 	}
 
@@ -26,6 +28,23 @@ class StateManager {
 	triggerRender() {
 		this.stateChangeCallbacks.forEach(stateCb => stateCb(this.state))
 	}
+
+  /* ACTIONS */
+
+  addNode(x, y, text = '') {
+    const nodeId = genId()
+    this.state.nodes.push({
+      id: nodeId,
+      box: {
+        x, y, width: null, height: null
+      },
+      text: { x: null, y: null, content: text },
+      interactionState: null
+    })
+
+    Object.assign(this.state, layout(this.state.nodes, this.state.edges, [nodeId]))
+    this.triggerRender()
+  }
 }
 
 const stateManager = new StateManager()

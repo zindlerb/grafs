@@ -68,3 +68,8 @@ procedure feasible_tree()
  init_cutvalues();
  end
  */
+export layoutNode(x, y, text) {
+  return {
+    box: { x, y,  }
+  }
+}
