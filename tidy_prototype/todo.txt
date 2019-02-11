@@ -1,3 +1,4 @@
+- talk to artem about interviewee
 [x] get get selecting of nodes to work
 [ ] get dragging of box to work
 [ ] get connecting of boxes to work

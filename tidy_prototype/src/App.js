@@ -8,6 +8,7 @@ import stateManager from './utilities/state_manager.js'
 import { D_KEY, F_KEY } from './utilities/keycodes.js'
 import { isPointWithinRect, getRectMidpoint } from './utilities/general.js'
 import positionInElement from './utilities/positionInElement.js'
+import dragManager from './drag_manager.js'
 
 /*
    Idea:
@@ -34,36 +35,40 @@ class Node extends Component {
     }
   }
 
-	render() {
-	  const { box, text, interactionState, id, onClick, isActive } = this.props
+  render() {
+    const { box, text, interactionState, id, isActive, onMouseUp, onMouseDown } = this.props
     const { isHovered } = this.state
     return (
-			<g
-        onClick={(e) => {
-				  onClick(id)
+      <g
+        onMouseDown={(e) => {
+          onMouseDown(id, e)
+          e.stopPropagation()
+        }}
+        onMouseUp={() => {
+          onMouseUp(id, e)
           e.stopPropagation()
         }}
         className={cx('grab node', { isHovered, isActive })}
         onMouseEnter={() => this.setState({ isHovered: true })}
         onMouseLeave={() => this.setState({ isHovered: false  })}
       >
-				<rect
+        <rect
           className="node-rect"
-  			  fill="white"
-	  			stroke="black"
-		  		x={box.x}
-			  	y={box.y}
-				  width={box.width}
-				  height={box.height}
-				/>
+          fill="white"
+          stroke="black"
+          x={box.x}
+          y={box.y}
+          width={box.width}
+          height={box.height}
+        />
         <text
-					x={text.x}
-					y={text.y}>
-					{text.content}
-				</text>
-			</g>
-		)
-}
+          x={text.x}
+          y={text.y}>
+          {text.content}
+        </text>
+      </g>
+    )
+  }
 }
 
 const Edge = ({ line, text }) => {
@@ -88,9 +93,23 @@ const Edge = ({ line, text }) => {
 class Renderer extends Component {
   constructor(props) {
     super(props)
-	  this.state = {
+    this.state = {
       activeItemId: null
     }
+  }
+
+  beginDrag(id, e) {
+    dragManager.start(e, {
+      onConsummate() {
+        stateManager.beginDrag(id)
+      },
+      onDrag(e, { dx, dy }) {
+        stateManager.drag(dx, dy)
+      },
+      onEnd() {
+        stateManager.endDrag()
+      }
+    })
   }
 
   click(e) {
@@ -109,13 +128,19 @@ class Renderer extends Component {
 
     return (
       <svg onClick={this.click.bind(this)} className="w-100 h-100 flex-auto">
-        {edges.map((node) => <Edge {...edge}/>)}
+        {edges.map((edge) => <Edge key={edge.id} {...edge}/>)}
         {nodes.map((node) => {
-				   return (
+           return (
              <Node
-              onClick={(id) => this.setState({ activeItemId: id })}
-              isActive={activeItemId === node.id }
-              {...node}
+                onMouseDown={this.beginDrag.bind(this)}
+                key={node.id}
+                onMouseUp={(id) => {
+                  if (stateManager.state.interactionState === 'move') {
+                    this.setState({ activeItemId: id })
+                  }
+                }}
+               isActive={activeItemId === node.id }
+               {...node}
              />
            )
         })}
@@ -129,9 +154,9 @@ const TopBar = ({ interactionState }) => {
     <div className="top-bar flex justify-between pv3 ph4 items-center flex-shrink-0">
       <div className={cx("help-text", { tomato: interactionState === 'addNode' })}>Hold "D" to add a new node.</div>
       <div className="flex">
-				<div className="mh1 button clickable">Layout Horizontal</div>
+        <div className="mh1 button clickable">Layout Horizontal</div>
         <div className="mh1 button clickable">Layout Vertical</div>
-			</div>
+      </div>
     </div>
   )
 }
@@ -146,17 +171,17 @@ class App extends Component {
 
   onKeydown({ keyCode }) {
     const { interactionState } = this.state
-		if (D_KEY === keyCode && interactionState !== 'addNode') {
-			stateManager.setState({ interactionState: 'addNode' })
-		}
-	}
+    if (D_KEY === keyCode && interactionState !== 'addNode') {
+      stateManager.setState({ interactionState: 'addNode' })
+    }
+  }
 
-	onKeyup({ keyCode }) {
+  onKeyup({ keyCode }) {
     const { interactionState } = this.state
-		if (D_KEY === keyCode && interactionState !== 'move') {
-			stateManager.setState({ interactionState: 'move' })
-		}
-	}
+    if (D_KEY === keyCode && interactionState !== 'move') {
+      stateManager.setState({ interactionState: 'move' })
+    }
+  }
 
   componentDidMount() {
     window.addEventListener('keydown', this.onKeydown.bind(this))
@@ -169,15 +194,15 @@ class App extends Component {
     window.removeEventListener('keyup', this.onKeyup.bind(this))
   }
 
-	render() {
+  render() {
     const { interactionState } = this.state
 
-		return (
-			<div className={cx('app h-100 flex flex-column', interactionState)}>
-				<TopBar interactionState={interactionState} />
-				<Renderer {...this.state} />
-			</div>
-		)
+    return (
+      <div className={cx('app h-100 flex flex-column', interactionState)}>
+        <TopBar interactionState={interactionState} />
+        <Renderer {...this.state} />
+      </div>
+    )
   }
 }
 

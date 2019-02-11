@@ -1,26 +1,40 @@
 // Taken from https://github.com/zindlerb/apparatus/blob/master/src/View/Manager/DragManager.coffee
 import _ from 'lodash';
+import positionInElement from './utilities/positionInElement.js'
+/*
+   inside the spec uses ctx to get access to the spec make sure to use func not =>
+
+   Spec:
+	 onDrag
+	 onEnd
+	 onConsummate
+
+   has access to this.drag inside
+
+   example usage:
+
+   dragManager.start(e, {
+   onDrag(e, { dx, dy }) {
+   // do something
+   },
+   onEnd() {
+
+   }
+   })
+ */
 
 class Drag {
   constructor(mouseDownEvent, spec) {
     _.extend(this, spec);
-    this.originalX = mouseDownEvent.clientX;
-    this.originalY = mouseDownEvent.clientY;
+    const {x, y} = positionInElement(mouseDownEvent)
+    this.originalX = x
+    this.originalY = y
 
     if (this.consummated === undefined) {
       this.consummated = false;
     }
   }
 }
-
-/*
-	inside the spec uses ctx to get access to the spec make sure to use func not =>
-
-	Spec:
-		onDrag
-		onEnd
-		onConsummate
-*/
 
 class DragManager {
   constructor() {
@@ -35,8 +49,9 @@ class DragManager {
 
   _onMouseMove(mouseMoveEvent) {
     if (!this.drag) return;
-    const dx = mouseMoveEvent.clientX - this.drag.originalX;
-    const dy = mouseMoveEvent.clientY - this.drag.originalY;
+    const {x, y} = positionInElement(mouseMoveEvent)
+    const dx = x - this.drag.originalX;
+    const dy = y - this.drag.originalY;
     if (!this.drag.consummated) {
       // Check if we should consummate.
       const d = Math.max(Math.abs(dx), Math.abs(dy));
