@@ -47,3 +47,18 @@ body, html, #root {
 .app.addNode {
   cursor: crosshair;
 }
+
+.node.isHovered {
+  opacity: 0.6;
+}
+.node.isHovered .node-rect {
+  stroke: #ff8288;
+}
+
+.node.isActive .node-rect {
+  stroke: #ff8288
+}
+
+.grab {
+  cursor: grab;
+}

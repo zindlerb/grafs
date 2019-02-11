@@ -7,6 +7,7 @@ import './App.css'
 import stateManager from './utilities/state_manager.js'
 import { D_KEY, F_KEY } from './utilities/keycodes.js'
 import { isPointWithinRect, getRectMidpoint } from './utilities/general.js'
+import positionInElement from './utilities/positionInElement.js'
 
 /*
    Idea:
@@ -25,22 +26,44 @@ import { isPointWithinRect, getRectMidpoint } from './utilities/general.js'
    text: x, y, content
  */
 
-const Node = ({ box, text, interactionState }) => {
-  return (
-    <g>
-    <text
-    x={text.x}
-        y={text.y}>
-        {text.content}
-      </text>
-      <rect
-        x={box.x}
-        y={box.y}
-        width={box.width}
-        height={box.height}
-      />
-    </g>
-  )
+class Node extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      isHovered: false
+    }
+  }
+
+	render() {
+	  const { box, text, interactionState, id, onClick, isActive } = this.props
+    const { isHovered } = this.state
+    return (
+			<g
+        onClick={(e) => {
+				  onClick(id)
+          e.stopPropagation()
+        }}
+        className={cx('grab node', { isHovered, isActive })}
+        onMouseEnter={() => this.setState({ isHovered: true })}
+        onMouseLeave={() => this.setState({ isHovered: false  })}
+      >
+				<rect
+          className="node-rect"
+  			  fill="white"
+	  			stroke="black"
+		  		x={box.x}
+			  	y={box.y}
+				  width={box.width}
+				  height={box.height}
+				/>
+        <text
+					x={text.x}
+					y={text.y}>
+					{text.content}
+				</text>
+			</g>
+		)
+}
 }
 
 const Edge = ({ line, text }) => {
@@ -63,25 +86,39 @@ const Edge = ({ line, text }) => {
 }
 
 class Renderer extends Component {
-  click() {
+  constructor(props) {
+    super(props)
+	  this.state = {
+      activeItemId: null
+    }
+  }
+
+  click(e) {
     const { interactionState } = this.props
-
     if (interactionState === 'addNode') {
-      stateManager.setState((state) => {
-        state.nodes.push({
-
-        })
-      })
+      const { x, y } = positionInElement(e)
+      stateManager.addNode(x, y)
+    } else if (interactionState === 'move') {
+      this.setState({ activeItemId: null })
     }
   }
 
   render() {
-    const { nodes, edges } = this.props
+    const { nodes, edges, onNodeClick } = this.props
+    const { activeItemId } = this.state
 
     return (
       <svg onClick={this.click.bind(this)} className="w-100 h-100 flex-auto">
         {edges.map((node) => <Edge {...edge}/>)}
-        {nodes.map((node) => <Node {...node}/>)}
+        {nodes.map((node) => {
+				   return (
+             <Node
+              onClick={(id) => this.setState({ activeItemId: id })}
+              isActive={activeItemId === node.id }
+              {...node}
+             />
+           )
+        })}
       </svg>
     )
   }
@@ -99,17 +136,7 @@ const TopBar = ({ interactionState }) => {
   )
 }
 
-const onKeydown = ({ keyCode }) => {
-  if (D_KEY === keyCode) {
-    stateManager.setState({ interactionState: 'addNode' })
-  }
-}
 
-const onKeyup = ({ keyCode }) => {
-  if (D_KEY === keyCode) {
-    stateManager.setState({ interactionState: 'move' })
-  }
-}
 
 class App extends Component {
   constructor() {
@@ -117,15 +144,29 @@ class App extends Component {
     this.state = stateManager.state
   }
 
+  onKeydown({ keyCode }) {
+    const { interactionState } = this.state
+		if (D_KEY === keyCode && interactionState !== 'addNode') {
+			stateManager.setState({ interactionState: 'addNode' })
+		}
+	}
+
+	onKeyup({ keyCode }) {
+    const { interactionState } = this.state
+		if (D_KEY === keyCode && interactionState !== 'move') {
+			stateManager.setState({ interactionState: 'move' })
+		}
+	}
+
   componentDidMount() {
-    window.addEventListener('keydown', onKeydown)
-    window.addEventListener('keyup', onKeyup)
+    window.addEventListener('keydown', this.onKeydown.bind(this))
+    window.addEventListener('keyup', this.onKeyup.bind(this))
     stateManager.registerStateCallback(state => this.setState(state))
   }
 
   componentWillUnmount() {
-    window.removeEventListener('keydown', onKeydown)
-    window.removeEventListener('keyup', onKeyup)
+    window.removeEventListener('keydown', this.onKeydown.bind(this))
+    window.removeEventListener('keyup', this.onKeyup.bind(this))
   }
 
 	render() {

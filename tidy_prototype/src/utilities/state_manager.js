@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { genId } from './general.js'
+import Layout from './layout.js'
 
 class StateManager {
 	constructor() {
@@ -26,23 +26,13 @@ class StateManager {
 	}
 
 	triggerRender() {
+    console.log('this.state', this.state)
 		this.stateChangeCallbacks.forEach(stateCb => stateCb(this.state))
 	}
 
   /* ACTIONS */
-
   addNode(x, y, text = '') {
-    const nodeId = genId()
-    this.state.nodes.push({
-      id: nodeId,
-      box: {
-        x, y, width: null, height: null
-      },
-      text: { x: null, y: null, content: text },
-      interactionState: null
-    })
-
-    Object.assign(this.state, layout(this.state.nodes, this.state.edges, [nodeId]))
+    Object.assign(this.state, new Layout().addNode(this.state, { nodeX: x, nodeY: y, textContent: 'Insert Text Here' }))
     this.triggerRender()
   }
 }

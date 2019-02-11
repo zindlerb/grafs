@@ -1,75 +1,50 @@
+import { genId } from './general.js'
 
+// Determine the size of text based on the font size.
 
-// direction: forward, backward, both
-const graph = {
-  nodes: [
-    {
-      id: 1
-      text: 'first I do this',
-    },
-    {
-      id: 2,
-      text: 'then I do this',
-    },
-    {
-      id: 3,
-      text: 'hmm dis happens',
-    },
-    {
-      id: 4,
-      text: 'sumtimes dis',
-    },
-  ],
-  edges: [
-    { id: 1, nodes: [1, 2], direction: 'forward' },
-    { id: 2, nodes: [1, 3], direction: 'forward' },
-    { id: 3, nodes: [3, 4], direction: 'forward' },
-  ]
+const getTextDimensions = (textContent, fontSize) => {
+  var div = document.createElement('div')
+  div.style.position = 'absolute'
+  div.style.visibility = 'hidden'
+  div.style.height = 'auto'
+  div.style.width = 'auto'
+  div.style.whiteSpace = 'nowrap'
+  div.style.fontFamily = 'Source Sans Pro'
+  div.style.fontSize = `${fontSize}`
+  div.style.border = "1px solid blue"; // for convenience when visible
+  div.innerHTML = textContent
+  document.body.appendChild(div)
+  const { width, height } = div.getBoundingClientRect()
+  document.body.removeChild(div);
+  return { width, height: height - 9 /* Hack to account for baseline. Need to remove */  };
 }
 
-// rank
-// break cycles by reversing edges
-// ordering
-// position
-// make splines
+class Layout {
+  constructor() {
+    this.fontSize = 16
+    this.nodePadding = 10
+  }
 
-// render
+  addNode({ nodes, edges }, { textContent = '', nodeX, nodeY }) {
+    const textDimensions = getTextDimensions(textContent)
+    nodes.push({
+      id: genId(),
+      box: {
+        x: nodeX,
+        y: nodeY,
+        width: textDimensions.width + (this.nodePadding * 2),
+        height: textDimensions.height + (this.nodePadding * 2)
+      },
+      text: {
+        x: nodeX + this.nodePadding,
+        y: nodeY + textDimensions.height + this.nodePadding,
+        content: textContent
+      },
+      interactionState: null
+    })
 
-/*
-	psuedo code
-
-	procedure draw_graph()
-		rank();
-		ordering();
-		position();
-		make_splines();
-	end
-
-	procedure rank()
-		feasible_tree();
-		while (e = leave_edge()) ≠ nil do
-			f = enter_edge(e);
-			exchange(e,f);
-		end
-		normalize();
-		balance();
-end
-
-
-procedure feasible_tree()
- init_rank();
- while tight_tree() <  V do
- e = a non-tree edge incident on the tree
- with a minimal amount of slack;
- delta = slack(e);
- if incident node is e.head then delta = -delta;
- for v in Tree do v.rank = v.rank + delta;
- end
- init_cutvalues();
- end
- */
-export layoutNode(x, y, text) {
-  return {
-    box: { x, y,  }
+    return { nodes, edges }
   }
 }
+
+export default Layout
