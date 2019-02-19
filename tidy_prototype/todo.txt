@@ -1,7 +1,18 @@
-- talk to artem about interviewee
 [x] get get selecting of nodes to work
-[ ] get dragging of box to work
-[ ] get connecting of boxes to work
+[x] get dragging of box to work
+[ ] adding of boxes to work
+[ ] hovering of boxes
+[ ] selecting of boxes to work
+[ ] potential dragging of boxes to work
+[ ] dragging of boxes
+[ ] potential connecting
+[ ] connecting of boxes
+[ ] potential move canvas
+[ ] moving canvas
+
+
+
+
 [ ] get selecting of edge to work
 [ ] get deleteing to work nodes and edges
 [ ] get editing of text box to work

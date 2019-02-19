@@ -1,0 +1,45 @@
+* {
+	-webkit-user-select: none; /* Safari */
+	-moz-user-select: none; /* Firefox */
+	-ms-user-select: none; /* IE10+/Edge */
+	user-select: none; /* Standard */
+}
+
+html {
+  font-family: 'Source Sans Pro', sans-serif;
+}
+
+body, html, #root {
+	height: 100%;
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  opacity: 0.8;
+}
+
+.button {
+  padding: 5px 14px;
+  background-color: #ffb4b4;
+  border-radius: 6px;
+  color: #3c3c3c;
+}
+
+.top-bar {
+  box-shadow: 0px 1px 4px 0px #cccccc;
+}
+
+.help-text {
+  color: #d2d2d2;
+}
+
+.tomato {
+  color: tomato;
+}
+
+.flex-shrink-0 {
+  flex-shrink: 0;
+}

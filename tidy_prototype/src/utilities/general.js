@@ -50,3 +50,12 @@ export const getTextBoxDimensions = (text, padding) => {
 	sizingEl.remove()
 	return size
 }
+
+export const padRect = ({ x, y, width, height }, padding) => {
+	return {
+		x: x - padding,
+		y: y - padding,
+		width: width + (padding * 2),
+		height: height + (padding * 2)
+	}
+}

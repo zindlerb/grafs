@@ -1,13 +1,15 @@
 import _ from 'lodash'
 import Layout from './layout.js'
+import { POTENTIAL_SELECT, DRAG_NODE, POTENTIAL_NODE_DRAG } from '../constants/interaction_states.js'
 
 class StateManager {
 	constructor() {
 		this.stateChangeCallbacks = []
 		this.state = {
-      interactionState: 'move',
+			interactionState: POTENTIAL_SELECT,
+			activeItemId: null, // node or edge id
 			edges: [],
-      nodes: []
+			nodes: []
 		}
 	}
 
@@ -26,38 +28,65 @@ class StateManager {
 	}
 
 	triggerRender() {
-    console.log('this.state', this.state)
 		this.stateChangeCallbacks.forEach(stateCb => stateCb(this.state))
 	}
 
-  /* ACTIONS */
-  addNode(x, y, text = '') {
-    this.setState(
-      new Layout().addNode(this.state, { nodeX: x, nodeY: y, textContent: 'Insert Text Here' })
-    )
-  }
+	/* ACTIONS */
+	setInteractionState(newInteractionState) {
+		if (this.state.interactionState !== newInteractionState) {
+			this.setState({ interactionState: newInteractionState })
+		}
+	}
 
-  beginDrag(nodeId) {
-    this.setState({
-      interactionState: 'dragging',
-      draggedNode: _.cloneDeep(this.state.nodes.find(({ id }) => nodeId === id))
-    })
-  }
+	addNode(x, y, text = '') {
+		this.setState(
+			new Layout().addNode(this.state, { nodeX: x, nodeY: y, textContent: 'Insert Text Here' })
+		)
+	}
 
-  dragNode(dx, dy) {
-    const { x, y } = this.state.draggedNode.box
-    this.state.draggedNode.box.x = x - dx
-    this.state.draggedNode.box.y = y - dy
-    this.triggerRender()
-  }
+	selectNode(nodeId) {
+		this.setState({ activeItemId: nodeId })
+	}
 
-  endDrag() {
-    // this should set the actual x
-    this.setState({
-      interactionState: 'move',
-      draggedNode: null
-    })
-  }
+	deselectNode() {
+		this.setState({ activeItemId: null })
+	}
+
+	beginDrag(nodeId) {
+		const draggedNode = this.state.nodes.find(({ id }) => nodeId === id)
+		this.setState({
+			interactionState: DRAG_NODE,
+			draggedNode,
+			originalDragPosition: _.cloneDeep(draggedNode.pos)
+		})
+	}
+
+	dragNode(dx, dy) {
+		const { x, y } = this.state.originalDragPosition
+		this.state.draggedNode.pos.x = x + dx
+		this.state.draggedNode.pos.y = y + dy
+		this.triggerRender()
+	}
+
+	endDrag() {
+		this.setState({
+			interactionState: POTENTIAL_SELECT,
+			draggedNode: null,
+			originalDragPosition: null
+		})
+	}
+
+	beginPotentialNodeDrag() {
+		if (this.state.interactionState !== DRAG_NODE) {
+			this.setState({ interactionState: POTENTIAL_NODE_DRAG })
+		}
+	}
+
+	endPotentialNodeDrag() {
+		if (this.state.interactionState === POTENTIAL_NODE_DRAG) {
+			this.setState({ interactionState: POTENTIAL_SELECT })
+		}
+	}
 }
 
 const stateManager = new StateManager()
